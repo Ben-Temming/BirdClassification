@@ -1,2 +1,6 @@
 #Ignore dataset folder 
 Dataset/
+#Ignore chached python libraries
+__pycache__/
+#Ignore jupyter notebook checkpoints
+.ipynb_checkpoints/
