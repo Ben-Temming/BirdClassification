@@ -1,15 +1,10 @@
+import os
 import torch 
 import torch.nn.functional as F
 
-'''
-To do
-- class (called BirdClassifier) that can be initialized with a certain model (by passing in the model) 
-and then the path to an audio file can be passed into a function called predict_bird_species. 
-The class then processes the audio, uses the model to predict the class and looks up the bird name associated to the class id 
-and returns the bird name + (not sure) the confidence/percentage of the the prediction
+from collections import Counter 
+from utils import AudioUtil
 
--make is to that a mapping can be loaded (id to bird name) and then return bird name instead of id
-'''
 
 #rename to BirdAudioClassifier and rename model BirdAudioClassifierModel or BirdAudioClassifierCNN
 class BirdAudioClassifier: 
@@ -24,7 +19,7 @@ class BirdAudioClassifier:
         self.confidence_threshold = confidence_threshold
         
 
-    def predict_from_spectrogram(self, spectrogram): 
+    def predict_class_from_spectrogram(self, spectrogram): 
         #reshape the tensor (to add the batch dimension) and move the tensor to the GPU 
         input = spectrogram.unsqueeze(0).to(self.device)
 
@@ -49,11 +44,57 @@ class BirdAudioClassifier:
         return predicted_class, round(prediction_confidence, 3)
 
 
-    def predict_from_audio_file(self, file_path): 
+    def predict_class_from_audio_file(self, file_path): 
+        #check that the file exists
+        if not os.path.exists(file_path): 
+            raise Exception(f"The file: {file_path} does not exist")
+
+        #load the waveform 
+        waveform, sample_rate = AudioUtil.open_file(file_path)
+
+        #split the audio into 5-second chunks
+        waveform_chunks = AudioUtil.split_audio_into_chunks(waveform=waveform, sample_rate=sample_rate, 
+                                                          chunk_duration_s = 5.0, padded=True)
+
+
+        #predict the class for each of the 5-second chunks
+        predictions_list= []
+        confidence_list = []
+        for waveform_chunk in waveform_chunks: 
+            #create spectrogram 
+            spectrogram = AudioUtil.get_spectrogram(waveform_chunk)
+            #predict the class for the spectrogram
+            pred_class, pred_confidence = self.predict_class_from_spectrogram(spectrogram=spectrogram)
+            predictions_list.append(pred_class)
+            confidence_list.append(pred_confidence)
+
+        #find the most common class
+        class_counts = Counter(predictions_list)
+        most_common_class = class_counts.most_common(1)[0][0]
+
+        #calculate the average confidence of the most common class 
+        num_preds = class_counts.most_common(1)[0][1]
+        total_confidence = 0
+        
+        for pred, conf in zip(predictions_list, confidence_list): 
+            if pred == most_common_class: 
+                total_confidence += conf
+        
+        average_confidence = total_confidence / num_preds if num_preds > 0 else 0
+
+        #return the most common (and thus likely) prediction and the average confidence for that class
+        return most_common_class, round(average_confidence, 3)
+
+
+    def predict_classes_from_audio_file(self, file_path):
         '''
-        to do 
+        adaption of predict_class_from_audio_file that 
+        returns multiple bird classes if the confidence 
+        for each is high, this could be the case in a real-world recording 
+        where multiple birds might be present at the same time
         '''
-        pass 
+        pass
+
 
                 
 
