@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+import numpy as np
+from sklearn.metrics import confusion_matrix, precision_score, accuracy_score, recall_score, f1_score
 
 class BirdAudioClassifierModel(nn.Module): 
     def __init__(self, num_classes=88): 
@@ -144,5 +146,91 @@ class ModelTrainer:
     def load_model(self, path): 
         self.model.load_state_dict(torch.load(path))
         print(f"Loaded model from: {path}")
+
+
+
+class ModelTester: 
+    def __init__(self, model, test_dataloader): 
+        #get the device (use the GPU) 
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
+        self.model = model.to(self.device)
+        self.model.eval() 
+        
+        self.test_dataloader = test_dataloader
+
+        self.y_true = []
+        self.y_pred = []
+
+        #fill the y_true and y_pred lists
+        self.initialize()
+
+
+    def initialize(self): 
+        #create the prediction for the test_datasent 
+        # '''
+        with torch.no_grad(): 
+            for batch, (X, Y) in enumerate(self.test_dataloader): 
+                #move all tensors to the device 
+                X = X.to(self.device)
+                Y = Y.to(self.device)
+               
+                #predit classes 
+                predictions = self.model(X) 
+                #get the predicted classes
+                predicted_classes = torch.argmax(predictions, dim=1)
+
+                #apped to y_true and y_pred list 
+                self.y_true.extend(Y.cpu().numpy())
+                self.y_pred.extend(predicted_classes.cpu().numpy())
+
+
+    def get_confusion_matrix(self): 
+        return confusion_matrix(self.y_true, self.y_pred)
+        '''
+        Confusion matrix: Summary of the classifiers performance
+        
+        Confusion matrix layout 
+                class0, class1, ..., class87
+        class0   
+        class1
+        ...
+        class87
+        '''
+
+    def get_precision(self): 
+        '''
+        Precision: Accuracy of the positive predictions made by the classifier. 
+        Precision = TP/(TP+FP)
+        - High precision needed when a FP has significant consequences
+        '''
+        return precision_score(self.y_true, self.y_pred, average="micro")
+        
+    def get_accuracy(self): 
+        '''
+        Accuracy: Measure of overall correctness of the classifiers predictions 
+        Accuracy = (TP + TN)/(TP + TN + FP + FN)
+        '''
+        return accuracy_score(self.y_true, self.y_pred)
+
+    def get_recall(self): 
+        '''
+        Recall: Measure of the ability of the classifier to capture all the positive instances, 
+                number of correct positive predictions from all positives
+        Recall  = TP/(TP+ FN)
+        - High recall needed when a FN has signficant consequences
+        '''
+        return recall_score(self.y_true, self.y_pred, average="micro")
+
+    def get_F1_score(self): 
+        '''
+        F1 score: The harmonic mean of precision and recall. Good when over 0.7
+        F1 score = (2*precission * recall)/(precision + recall)
+        '''
+        return f1_score(self.y_true, self.y_pred, average="micro")
+
+
+    def print_ys(self): 
+        print(f"y_true: {self.y_true}")
+        print(f"y_pred: {self.y_pred}")
         
