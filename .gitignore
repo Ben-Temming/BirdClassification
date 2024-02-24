@@ -4,3 +4,6 @@ Dataset/
 __pycache__/
 #Ignore jupyter notebook checkpoints
 .ipynb_checkpoints/
+
+#Ignore the model folder
+Models/

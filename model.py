@@ -66,7 +66,7 @@ class ModelTrainer:
             train_loss = self.train_epoch(train_dataloader=train_dataloader)
             train_losses.append(train_loss)
             #test the model 
-            test_loss = self.test_epoch(test_dataloader=test_dataloader)
+            test_loss, _ = self.test_epoch(test_dataloader=test_dataloader)
             test_losses.append(test_loss)
             
         print("Finished training!")
@@ -134,7 +134,7 @@ class ModelTrainer:
         avg_correct_pred = correct_pred / len(test_dataloader.dataset) 
     
         print(f'\nTest Error:\nacc: {(100*avg_correct_pred):>0.1f}%, avg loss: {avg_test_loss:>8f}\n')
-        return avg_test_loss
+        return avg_test_loss, correct_pred
 
 
     def save_model(self, path): 
