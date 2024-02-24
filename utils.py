@@ -65,6 +65,7 @@ class AudioUtil:
 #create a custom dataset 
 class AudioDataSet(Dataset): 
     def __init__(self, df_metadata): 
+        super(AudioDataSet, self).__init__()
         self.df_metadata = df_metadata
 
     def __len__(self): 
