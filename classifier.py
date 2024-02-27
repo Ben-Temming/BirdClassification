@@ -6,7 +6,6 @@ from collections import Counter
 from utils import AudioUtil
 
 
-#rename to BirdAudioClassifier and rename model BirdAudioClassifierModel or BirdAudioClassifierCNN
 class BirdAudioClassifier: 
     def __init__(self, model, confidence_threshold=0.5): 
         #get the device 

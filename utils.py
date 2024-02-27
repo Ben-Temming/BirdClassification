@@ -64,9 +64,10 @@ class AudioUtil:
 
 #create a custom dataset 
 class AudioDataSet(Dataset): 
-    def __init__(self, df_metadata): 
+    def __init__(self, df_metadata, base_dir): 
         super(AudioDataSet, self).__init__()
         self.df_metadata = df_metadata
+        self.base_dir = base_dir
 
     def __len__(self): 
         return len(self.df_metadata)
@@ -76,7 +77,9 @@ class AudioDataSet(Dataset):
     '''
     def __getitem__(self, index): 
         #get the path of the item at the specified index
-        audio_file_path = self.df_metadata.loc[index, "path"]
+        relative_audio_file_path = self.df_metadata.loc[index, "relative_path"]
+        audio_file_path = os.path.join(self.base_dir, relative_audio_file_path)
+        
         #get the class id 
         class_id = self.df_metadata.loc[index, "class_id"]
 
