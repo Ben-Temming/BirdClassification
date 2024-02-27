@@ -218,7 +218,7 @@ class ModelTester:
         Recall: Measure of the ability of the classifier to capture all the positive instances, 
                 number of correct positive predictions from all positives
         Recall  = TP/(TP+ FN)
-        - High recall needed when a FN has signficant consequences
+        - High recall needed when a FN has significant consequences
         '''
         return recall_score(self.y_true, self.y_pred, average="micro")
 
