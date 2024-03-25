@@ -2,9 +2,7 @@
 Bird Song Classification for EG4578 group project 
 
 Install the required dependencies using pip: 
-    ```bash
-    pip install -r requirements.txt
-    ```
+    `pip install -r requirements.txt`
 
 ## Notebooks
 
